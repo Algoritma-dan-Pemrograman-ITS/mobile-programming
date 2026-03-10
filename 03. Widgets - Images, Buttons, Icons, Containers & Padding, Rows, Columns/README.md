@@ -710,29 +710,16 @@ Row(
 ---
 
 
-## Images
+#### Images
 
-Images can be displayed in Flutter using the `Image` widget. The `Image` widget can display images from the network or from the local assets.
+Flutter provides the `Image` widget as the standard way to display images, regardless of where they come from. There are two primary sources for images in a Flutter app:
 
-### Network Image
+1. **Network images**: loaded from a URL over the internet at runtime.
+2. **Asset images**: bundled directly with the app at build time.
 
-To display an image from the network, use the `NetworkImage` widget in the `Image` widget. Try changing the `body` of `Scaffold` to display an image from the network.
+Network images require an internet connection and load asynchronously. Asset images are always available offline and load instantly because they are part of the compiled app package.
 
-```dart
-body: Center(
-  child: Image(
-    image: NetworkImage('https://picsum.photos/200'),
-  ),
-),
-```
-
-or
-
-```dart
-body: Center(
-  child: Image.network('https://picsum.photos/200'),
-),
-```
+---
 
 <div align="center">
 
@@ -740,9 +727,62 @@ body: Center(
 
 </div>
 
-### Asset Image
+##### Network Image
 
-To display an image from asset directory, we need to create the `assets` directory in the root of the project and add the image file. Then, we need to modify the `pubspec.yaml` file to include the asset (below the commented instruction).
+A network image is fetched from a URL when the app runs. This is appropriate for content that changes over time: user avatars, product photos fetched from a server, or any image that is not known at build time. There are two equivalent ways to display a network image:
+
+```dart
+// Option 1: Using the Image widget with NetworkImage as the provider
+body: Center(
+  child: Image(
+    image: NetworkImage('https://picsum.photos/200'),
+  ),
+),
+```
+
+```dart
+// Option 2: Shorthand constructor — cleaner and more commonly used
+body: Center(
+  child: Image.network('https://picsum.photos/200'),
+),
+```
+
+Both produce the same result. `Image.network()` is the shorthand and is the preferred form in most codebases.
+
+**Useful properties for controlling how the image displays:**
+
+```dart
+Image.network(
+  'https://picsum.photos/400/200',
+  width: 300.0,
+  height: 150.0,
+  fit: BoxFit.cover,    // How the image fills its box — like CSS object-fit
+)
+```
+
+**`BoxFit` values — how the image fills its bounding box:**
+
+| Value | Behaviour |
+|---|---|
+| `BoxFit.contain` | Scales to fit entirely within the box, preserving aspect ratio |
+| `BoxFit.cover` | Scales to fill the entire box, cropping if needed (most common for thumbnails) |
+| `BoxFit.fill` | Stretches to fill the box exactly, ignoring aspect ratio |
+| `BoxFit.fitWidth` | Scales until the width fills the box |
+| `BoxFit.fitHeight` | Scales until the height fills the box |
+
+> **A note on error handling:** Network images can fail — the URL may be invalid, or the device may be offline. In production apps, always provide an `errorBuilder` to handle failures gracefully:
+> ```dart
+> Image.network(
+>   'https://picsum.photos/200',
+>   errorBuilder: (context, error, stackTrace) {
+>     return Icon(Icons.broken_image, size: 60.0, color: Colors.grey);
+>   },
+> )
+> ```
+
+---
+
+##### Asset Image
 
 <div align="center">
 
@@ -750,42 +790,67 @@ To display an image from asset directory, we need to create the `assets` directo
 
 </div>
 
-```yaml
-# To add assets to your application, add an assets section, like this:
-# assets:
-#   - images/a_dot_burr.jpeg
-#   - images/a_dot_ham.jpeg
+An asset image is a file stored *inside* your Flutter project and bundled with the app when it is compiled. This is appropriate for images that are always the same: app logos, placeholder graphics, decorative illustrations, icons. Using asset images requires two steps: registering the file with Flutter, and then referencing it in code.
 
-assets:
-  - assets/ # add this line to include the assets directory
-  - assets/legit-image.jpg # add this line to include specific image file
+**Step 1 — Add the image file to the project**
+
+Create an `assets/` folder at the root of your project (the same level as `pubspec.yaml`) and place your image files there.
+
+```
+my_flutter_project/
+├── assets/
+│   └── my_image.jpg        ← place images here
+├── lib/
+│   └── main.dart
+└── pubspec.yaml
 ```
 
-Then, we can display the image from the asset directory by using the `AssetImage` widget in the `Image` widget.
+**Step 2 — Register the asset in `pubspec.yaml`**
+
+Flutter does not automatically discover files in your project. Every asset must be explicitly declared in `pubspec.yaml`. Open the file and add the `assets` section under `flutter:`:
+
+```yaml
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/my_image.jpg          # register a specific file
+    # OR, to include every file in the folder:
+    - assets/                      # register the entire directory (note the trailing slash)
+```
+
+> **Indentation is critical in YAML.** Use exactly 2 spaces for each level of indentation, not tabs. A common error (`Error: unable to find directory entry in pubspec.yaml`) is almost always caused by incorrect indentation. After editing `pubspec.yaml`, Flutter automatically runs `flutter pub get` on save.
+
+**Step 3 — Display the image in code**
 
 ```dart
+// Option 1: Using the Image widget with AssetImage as the provider
 body: Center(
   child: Image(
-    image: AssetImage('assets/legit-image.jpg'),
+    image: AssetImage('assets/my_image.jpg'),
   ),
 ),
 ```
 
-or
-
 ```dart
+// Option 2: Shorthand constructor — preferred
 body: Center(
-  child: Image.asset('assets/legit-image.jpg'),
+  child: Image.asset('assets/my_image.jpg'),
 ),
 ```
 
-<div align="center">
+**Common mistakes with asset images:**
 
-![asset-image](images/04-images-asset-image.png)
+```dart
+// ❌ Wrong — the path in the code does not match pubspec.yaml
+// pubspec.yaml has: - assets/my_image.jpg
+// Code has:
+Image.asset('my_image.jpg')   // missing the 'assets/' prefix
 
-</div>
+// ✅ Correct — path must match exactly what is declared in pubspec.yaml
+Image.asset('assets/my_image.jpg')
+```
 
-Want to know more about asset image? [See the docs](https://docs.flutter.dev/ui/assets/assets-and-images)
+> **Path must match exactly.** The string passed to `Image.asset()` must be identical to the path declared in `pubspec.yaml`, including the folder prefix. A mismatch will cause a runtime error: *"Unable to load asset"*.
 
 ## Buttons & Icons
 
@@ -918,6 +983,7 @@ Can you recreate this layout using the widgets we have learned so far?
 ![challenge](images/14-challenge.png)
 
 </div>
+
 
 
 
