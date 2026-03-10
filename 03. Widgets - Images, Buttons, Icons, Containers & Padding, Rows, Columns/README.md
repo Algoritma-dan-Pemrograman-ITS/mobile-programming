@@ -28,7 +28,11 @@
 
 ## Widgets
 
-Widgets are the building blocks of a Flutter app's user interface, and each widget is an immutable declaration of part of the user interface. Widgets are used to describe all aspects of a user interface, including physical aspects such as text and buttons to lay out effects like padding and alignment.
+In Flutter, **everything you see on screen is a widget**. Text, buttons, images, padding, alignment, even the overall page structure, all of these are widgets. This is captured in the well-known Flutter principle:
+
+> *"Flutter is all about widgets."*
+
+Widgets are the **building blocks** of a Flutter application's user interface. They are comparable to components in ReactJS or elements in HTML, but in Flutter, they are used far more extensively, even layout logic (centering, spacing) is expressed as a widget.
 
 ### Widget composition
 
@@ -72,19 +76,68 @@ void main() {
 
 Widget are able to be nested within each other to create complex user interfaces. For example, a `Scaffold` widget can contain an `AppBar`, a `Center` as a body, a `FloatingActionButton`, and more.
 
-### Widget state
+### Widget State
 
-Widgets can be stateless or stateful. Stateless widgets are immutable, meaning that their properties can't change - all values are final (used for static content). Stateful widgets maintain state that might change during the lifetime of the widget (used for dynamic content).
+Before diving into each widget type, it is essential to understand what **state** means in the context of Flutter.
 
-For this module, we will focus on stateless widgets that provided by Flutter.
+**State** is any data that:
+1. Is held by a widget at a particular moment in time, **and**
+2. Can **change** during the lifetime of the application, **and**
+3. When it changes, it causes the widget's **visual output to update**.
+
+### Types of Widgets based on State
+
+Flutter categorises all widgets into two primary types based on one essential question:
+
+> **Does this widget need to remember or change any data over time?**
+
+| Property | StatelessWidget | StatefulWidget |
+|---|---|---|
+| Has internal data that changes? | ❌ No | ✅ Yes |
+| Can update its appearance after creation? | ❌ No | ✅ Yes |
+| Complexity | Lower | Higher |
+| Performance overhead | Lower | Slightly higher |
+| Use case | Static UI elements | Interactive, dynamic UI |
+
+Widgets can be stateless or stateful. 
+- Stateless widgets are immutable, meaning that their properties can't change, all values are final (used for static content).
+- Stateful widgets maintain state that might change during the lifetime of the widget (used for dynamic content).
+
+Use the following questions as a guide when deciding between the two widget types:
+
+```
+Does this widget need to store any data that changes while the app is running?
+│
+├── NO  → Use StatelessWidget
+│         (e.g., labels, icons, static cards, app bar titles)
+│
+└── YES → Ask: Where does the change come from?
+          │
+          ├── From the PARENT (parent rebuilds with new data)
+          │   → StatelessWidget is still sufficient
+          │   (e.g., a label whose text is controlled by a parent page)
+          │
+          └── From WITHIN the widget (user interaction, timer, network response)
+              → Use StatefulWidget
+              (e.g., a like button, a form field, an animation)
+```
+
+#### Scoreboard Analogy
+Imagine a basketball scoreboard. The scoreboard displays two numbers: the score for Team A and the score for Team B. Every time a team scores a point, the scoreboard's data (the scores) changes, and the display updates immediately to reflect the new values.
+
+- The **current scores** are the **state**.
+- The act of **updating the display** after a score change is equivalent to Flutter **rebuilding** (re-rendering) the widget.
+
+A widget with no state is like a photograph of the scoreboard, it shows fixed information and never changes regardless of what happens in the game.
 
 #### StatelessWidget
 
-`StatelessWidget` is a widget that **has no state** (no mutable data). Once built, its appearance will not change during its lifetime.
+For this module, we will focus on stateless widgets that provided by Flutter. `StatelessWidget` is a widget that **does not hold any internal state**. It is rendered once based on the configuration (properties) it receives from its parent, and its visual output remains constant unless the parent widget rebuilds it with new properties.
 
 **When to use?**
 - To display static content (text, images, icons) that does not need to be updated.
 - UI parts that depend only on data passed through the constructor (no user interaction that changes the appearance).
+- It **cannot modify its own appearance** from within.
 
 **How to create a StatelessWidget:**
 
@@ -146,11 +199,16 @@ void main() {
 
 #### StatefulWidget
 
-`StatefulWidget` is a widget that **has state** that can change during its lifetime. When the state changes (via `setState()`), Flutter will *rebuild* the widget to display the latest appearance.
+`StatefulWidget` is a widget that **maintains mutable state** internally. When that state changes, Flutter automatically calls `build()` again to redraw the widget with the updated information.
 
-A `StatefulWidget` consists of **two classes**:
-1. **Widget class** — defines the widget itself (immutable).
-2. **State class** — stores mutable data (state) and defines the appearance through the `build()` method.
+Key characteristics:
+- The widget can **store and modify data** internally.
+- Changes to state are declared using the `setState()` method.
+- Calling `setState()` signals Flutter to schedule a **rebuild** of the widget.
+- It requires **two classes** to function correctly.
+  1. **Widget class** — defines the widget itself (immutable).
+  2. **State class** — stores mutable data (state) and defines the appearance through the `build()` method.
+
 
 **When to use?**
 - Content that changes based on user interaction (buttons, input, checkboxes).
@@ -832,3 +890,4 @@ Can you recreate this layout using the widgets we have learned so far?
 ![challenge](images/14-challenge.png)
 
 </div>
+
