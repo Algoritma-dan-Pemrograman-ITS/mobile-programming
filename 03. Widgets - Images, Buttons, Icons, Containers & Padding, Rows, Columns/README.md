@@ -543,117 +543,169 @@ One of the most common points of confusion with `Container` is the difference be
 
 #### Row and Column
 
-`Row` and `Column` are layout widgets used to **arrange multiple child widgets horizontally (`Row`) or vertically (`Column`)**.
+Every app interface you have ever used is, at its core, a combination of things arranged either *horizontally* or *vertically*. Flutter makes this explicit with two dedicated layout widgets: `Row` for horizontal arrangements and `Column` for vertical ones. Both widgets share the same set of properties and behave identically, the only difference is the *direction* in which they arrange their children.
 
-**Main properties (applies to both):**
+##### Understanding the Two Axes
 
-| Property | Description |
-|---|---|
-| `children` | List of widgets to arrange |
-| `mainAxisAlignment` | Alignment along the main axis (horizontal for Row, vertical for Column) |
-| `crossAxisAlignment` | Alignment along the cross axis (vertical for Row, horizontal for Column) |
-| `mainAxisSize` | Size of the main axis (`max` or `min`) |
+This is the single most important concept to understand before writing a single line of `Row` or `Column` code. Every layout widget in Flutter operates on **two axes simultaneously**, and confusing them is the source of the majority of layout errors beginners encounter.
 
-**Axis illustration:**
+- The **main axis** is the direction the widget *travels in*. For `Row`, that is horizontal (left → right). For `Column`, that is vertical (top → bottom).
+- The **cross axis** is the direction *perpendicular* to the main axis. For `Row`, that is vertical. For `Column`, that is horizontal.
 
 ```
 Row:
-  mainAxis   → →  (horizontal)
-  crossAxis  ↓    (vertical)
+  main axis   →  →  →  (horizontal, left to right)
+  cross axis  ↓        (vertical, top to bottom)
 
 Column:
-  mainAxis   ↓    (vertical)
-  crossAxis  → →  (horizontal)
+  main axis   ↓        (vertical, top to bottom)
+  cross axis  → →      (horizontal, left to right)
 ```
 
-**`Row` example:**
+> **A memory trick:** The main axis runs in the *same direction as the widget's name suggests*. A `Row` arranges things *in a row* → horizontally. A `Column` stacks things *in a column* → vertically. The cross axis is always the other one.
+
+Why does this matter? Because `mainAxisAlignment` and `crossAxisAlignment` — the two properties you will use constantly — each control *one* of these axes. Getting the axes right means your alignment properties do exactly what you intend.
+
+**Main properties (applies to both `Row` and `Column`):**
+
+| Property | Description |
+|---|---|
+| `children` | The list of widgets to arrange |
+| `mainAxisAlignment` | How children are spaced/positioned along the main axis |
+| `crossAxisAlignment` | How children are aligned along the cross axis |
+| `mainAxisSize` | Whether the widget expands to fill the axis (`max`) or shrinks to fit its children (`min`) |
+
+##### `Row` — Horizontal Layout
+
+Use `Row` whenever you need widgets placed side by side. Common real-world examples: a navigation bar with icons and labels, a user profile row with an avatar and name, or a price tag with a currency symbol and an amount.
 
 ```dart
 body: Row(
-  // Arrange children along the main axis (horizontal)
+  // mainAxisAlignment controls horizontal spacing in a Row
   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  // Arrange children along the cross axis (vertical)
+  // crossAxisAlignment controls vertical alignment in a Row
   crossAxisAlignment: CrossAxisAlignment.center,
   children: [
     Container(
       width: 80, height: 80,
       color: Colors.red,
-      child: Center(child: Text('A', style: TextStyle(color: Colors.white, fontSize: 24))),
+      child: Center(
+        child: Text('A', style: TextStyle(color: Colors.white, fontSize: 24)),
+      ),
     ),
     Container(
-      width: 80, height: 120,
+      width: 80, height: 120,      // taller than A and C to show crossAxisAlignment
       color: Colors.green,
-      child: Center(child: Text('B', style: TextStyle(color: Colors.white, fontSize: 24))),
+      child: Center(
+        child: Text('B', style: TextStyle(color: Colors.white, fontSize: 24)),
+      ),
     ),
     Container(
       width: 80, height: 80,
       color: Colors.blue,
-      child: Center(child: Text('C', style: TextStyle(color: Colors.white, fontSize: 24))),
+      child: Center(
+        child: Text('C', style: TextStyle(color: Colors.white, fontSize: 24)),
+      ),
     ),
   ],
 ),
 ```
 
-**`Column` example:**
+> **What to observe:** Container B is taller than A and C. Because `crossAxisAlignment` is set to `.center`, the shorter containers (A and C) are vertically centred relative to B. Try changing it to `.start` or `.end` to see how they shift.
+
+##### `Column` — Vertical Layout
+
+Use `Column` whenever you need widgets stacked one below another. Common real-world examples: a login form with a text field, password field, and submit button; a product detail page with an image, title, description, and price.
 
 ```dart
 body: Column(
-  // Arrange children along the main axis (vertical)
+  // mainAxisAlignment controls vertical spacing in a Column
   mainAxisAlignment: MainAxisAlignment.center,
-  // Stretch children to fill the screen width
+  // crossAxisAlignment: stretch makes each child fill the full width
   crossAxisAlignment: CrossAxisAlignment.stretch,
   children: [
     Container(
       height: 60,
       color: Colors.red,
-      child: Center(child: Text('Row 1', style: TextStyle(color: Colors.white, fontSize: 18))),
+      child: Center(
+        child: Text('Row 1', style: TextStyle(color: Colors.white, fontSize: 18)),
+      ),
     ),
-    SizedBox(height: 8.0), // Spacing between items
+    SizedBox(height: 8.0),   // Use SizedBox for spacing — cleaner than padding hacks
     Container(
       height: 60,
       color: Colors.green,
-      child: Center(child: Text('Row 2', style: TextStyle(color: Colors.white, fontSize: 18))),
+      child: Center(
+        child: Text('Row 2', style: TextStyle(color: Colors.white, fontSize: 18)),
+      ),
     ),
     SizedBox(height: 8.0),
     Container(
       height: 60,
       color: Colors.blue,
-      child: Center(child: Text('Row 3', style: TextStyle(color: Colors.white, fontSize: 18))),
+      child: Center(
+        child: Text('Row 3', style: TextStyle(color: Colors.white, fontSize: 18)),
+      ),
     ),
   ],
 ),
 ```
 
-**`MainAxisAlignment` values:**
+> **`SizedBox` for spacing:** Rather than wrapping every item in a `Padding`, it is a common and cleaner pattern in Flutter to place a `SizedBox(height: 8.0)` (in a Column) or `SizedBox(width: 8.0)` (in a Row) between children as a dedicated spacer.
+
+##### Alignment Reference
+
+**`MainAxisAlignment` values** — controls spacing and position *along* the widget's direction:
 
 | Value | Effect |
 |---|---|
-| `start` | Children are grouped at the start of the axis |
-| `end` | Children are grouped at the end of the axis |
-| `center` | Children are grouped in the center |
-| `spaceBetween` | Equal spacing between children (no spacing at the edges) |
-| `spaceAround` | Equal spacing around each child |
-| `spaceEvenly` | Equal spacing, including at the edges |
+| `start` | Children packed at the beginning of the axis (default) |
+| `end` | Children packed at the end of the axis |
+| `center` | Children packed at the centre |
+| `spaceBetween` | Equal gaps *between* children; no gap at the edges |
+| `spaceAround` | Equal gaps around each child; edge gaps are half the inner gaps |
+| `spaceEvenly` | Equal gaps everywhere — between children and at both edges |
 
-**`CrossAxisAlignment` values:**
+> **Visualising the space options** — imagine 3 boxes on a shelf:
+> - `spaceBetween`: `[A   B   C]` — space only between items
+> - `spaceAround`: `[ A   B   C ]` — half-space at edges, full between
+> - `spaceEvenly`: `[  A   B   C  ]` — identical space everywhere
+
+**`CrossAxisAlignment` values** — controls alignment *perpendicular* to the widget's direction:
 
 | Value | Effect |
 |---|---|
-| `start` | Children are aligned to the start of the cross axis |
-| `end` | Children are aligned to the end of the cross axis |
-| `center` | Children are aligned to the center of the cross axis |
-| `stretch` | Children are stretched to fill the cross axis |
+| `start` | Aligned to the beginning of the cross axis |
+| `end` | Aligned to the end of the cross axis |
+| `center` | Aligned to the middle of the cross axis (default) |
+| `stretch` | Stretched to fill the full cross-axis extent |
 
-> **Tips:** Use the `Expanded` or `Flexible` widget inside `Row`/`Column` to proportionally divide the available space among child widgets.
+---
+
+##### Distributing Space with `Expanded` and `Flexible`
+
+A frequent challenge with `Row` and `Column` is handling children that need to *share* the available space proportionally rather than each taking a fixed size. This is where `Expanded` and `Flexible` become essential.
+
+Think of `Expanded` like dividing a pizza. If three people agree to share a pizza, `Expanded` with a default `flex: 1` on each person gives them equal slices. If one person uses `flex: 2`, they get twice as much as each of the others.
 
 ```dart
 Row(
   children: [
-    Expanded(flex: 1, child: Container(color: Colors.red, height: 50)),   // 1 part
-    Expanded(flex: 2, child: Container(color: Colors.blue, height: 50)),  // 2 parts
+    // flex: 1 — this takes 1 "part" of the total available width
+    Expanded(
+      flex: 1,
+      child: Container(color: Colors.red, height: 50),
+    ),
+    // flex: 2 — this takes 2 "parts" — twice as wide as the red container
+    Expanded(
+      flex: 2,
+      child: Container(color: Colors.blue, height: 50),
+    ),
   ],
 )
 ```
+
+> **Important:** Without `Expanded`, if a child widget's content is wider than the available space, Flutter will display a yellow-and-black "overflow" warning stripe on screen. Wrapping the overflowing child in `Expanded` is the standard fix.
 
 ---
 
@@ -857,94 +909,6 @@ body: Padding(
 
 </div>
 
-## Rows & Columns
-
-Rows and columns are used to arrange child widgets horizontally (row) or vertically (column). Rows and columns can be used to create complex layouts in the app.
-
-For easier demonstration, we will be using containers as child widgets for rows and columns.
-
-To create a row, we can use the `Row` widget with the `children` property.
-
-```dart
-body: Container(
-  decoration: BoxDecoration(
-    border: Border.all(color: Colors.black),
-  ),
-  child: Row(
-    mainAxisAlignment: MainAxisAlignment.center,
-    crossAxisAlignment: CrossAxisAlignment.center,
-    children: [
-      Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.black),
-        ),
-        width: 100,
-        height: 100,
-        child: Text('Container 1'),
-      ),
-      Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.black),
-        ),
-        width: 150,
-        height: 150,
-        child: Text('Container 2'),
-      ),
-    ],
-  ),
-),
-```
-
-<div align="center">
-
-![row](images/12-row.png)
-
-</div>
-
-To create a column, we can use the `Column` widget with the `children` property.
-
-```dart
-body: Container(
-  decoration: BoxDecoration(
-    border: Border.all(color: Colors.black),
-  ),
-  child: Column(
-    mainAxisAlignment: MainAxisAlignment.center,
-    crossAxisAlignment: CrossAxisAlignment.center,
-    children: [
-      Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.black),
-        ),
-        width: 100,
-        height: 100,
-        child: Text('Container 1'),
-      ),
-      Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.black),
-        ),
-        width: 150,
-        height: 150,
-        child: Text('Container 2'),
-      ),
-    ],
-  ),
-),
-```
-
-<div align="center">
-
-![column](images/13-column.png)
-
-</div>
-
-Attributes like `mainAxisAlignment` and `crossAxisAlignment` can be used to align the child widgets in the row or column. The `mainAxisAlignment` attribute is used to align the child widgets along the main axis (row for row, column for column), while the `crossAxisAlignment` attribute is used to align the child widgets along the cross axis (column for row, row for column).
-
-Try changing the `mainAxisAlignment` and `crossAxisAlignment` attributes to see the different alignments.
-
-Want to know more about rows and columns? [See the docs](https://docs.flutter.dev/ui/layout)
-
 ## Challenge
 
 Can you recreate this layout using the widgets we have learned so far?
@@ -954,5 +918,6 @@ Can you recreate this layout using the widgets we have learned so far?
 ![challenge](images/14-challenge.png)
 
 </div>
+
 
 
