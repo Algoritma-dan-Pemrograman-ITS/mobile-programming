@@ -7,6 +7,15 @@
 - [Widgets](#widgets)
   - [Widget composition](#widget-composition)
   - [Widget state](#widget-state)
+    - [StatelessWidget](#statelesswidget)
+    - [StatefulWidget](#statefulwidget)
+  - [Common Widgets](#common-widgets)
+    - [Scaffold](#scaffold)
+    - [Padding](#padding)
+    - [ColoredBox](#coloredbox)
+    - [Center](#center)
+    - [Container](#container)
+    - [Row and Column](#row-and-column)
 - [Images](#images)
   - [Network Image](#network-image)
   - [Asset Image](#asset-image)
@@ -68,6 +77,464 @@ Widget are able to be nested within each other to create complex user interfaces
 Widgets can be stateless or stateful. Stateless widgets are immutable, meaning that their properties can't change - all values are final (used for static content). Stateful widgets maintain state that might change during the lifetime of the widget (used for dynamic content).
 
 For this module, we will focus on stateless widgets that provided by Flutter.
+
+#### StatelessWidget
+
+`StatelessWidget` is a widget that **has no state** (no mutable data). Once built, its appearance will not change during its lifetime.
+
+**When to use?**
+- To display static content (text, images, icons) that does not need to be updated.
+- UI parts that depend only on data passed through the constructor (no user interaction that changes the appearance).
+
+**How to create a StatelessWidget:**
+
+A class must extend `StatelessWidget` and override the `build()` method that returns a widget.
+
+```dart
+import 'package:flutter/material.dart';
+
+// StatelessWidget definition
+class MyCard extends StatelessWidget {
+  // Parameters can be received through the constructor
+  final String title;
+  final String subtitle;
+
+  // Constructor
+  const MyCard({super.key, required this.title, required this.subtitle});
+
+  // The build() method must be overridden — returns the widget's appearance
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 4.0,
+      child: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8.0),
+            Text(subtitle),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+void main() {
+  runApp(MaterialApp(
+    home: Scaffold(
+      appBar: AppBar(title: Text('StatelessWidget Demo')),
+      body: Center(
+        child: MyCard(
+          title: 'Hello, Flutter!',
+          subtitle: 'This is a StatelessWidget.',
+        ),
+      ),
+    ),
+  ));
+}
+```
+
+> **Note:** Data in a `StatelessWidget` is `final` — meaning its value is set when the widget is created and cannot be changed afterwards.
+
+---
+
+#### StatefulWidget
+
+`StatefulWidget` is a widget that **has state** that can change during its lifetime. When the state changes (via `setState()`), Flutter will *rebuild* the widget to display the latest appearance.
+
+A `StatefulWidget` consists of **two classes**:
+1. **Widget class** — defines the widget itself (immutable).
+2. **State class** — stores mutable data (state) and defines the appearance through the `build()` method.
+
+**When to use?**
+- Content that changes based on user interaction (buttons, input, checkboxes).
+- Data that is updated over time (timers, animations, network data).
+
+**Example of a StatefulWidget:**
+
+```dart
+// 1. Widget class (immutable)
+class CounterWidget extends StatefulWidget {
+  const CounterWidget({super.key});
+
+  // createState() links the widget to its State class
+  @override
+  State<CounterWidget> createState() => _CounterWidgetState();
+}
+
+// 2. State class (stores mutable data)
+class _CounterWidgetState extends State<CounterWidget> {
+  // State variable — its value can change
+  int _counter = 0;
+
+  // Method to change the state
+  void _increment() {
+    setState(() {
+      // setState() tells Flutter that the state has changed
+      // and the widget needs to be rebuilt
+      _counter++;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'Number of clicks:',
+          style: TextStyle(fontSize: 18.0),
+        ),
+        Text(
+          '$_counter', // Display the value of _counter
+          style: TextStyle(fontSize: 48.0, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 16.0),
+        ElevatedButton(
+          onPressed: _increment, // Call _increment when button is pressed
+          child: Text('Add'),
+        ),
+      ],
+    );
+  }
+}
+
+void main() {
+  runApp(MaterialApp(
+    home: Scaffold(
+      appBar: AppBar(title: Text('StatefulWidget Demo')),
+      body: Center(child: CounterWidget()),
+    ),
+  ));
+}
+```
+
+StatefulWidget will be discussed in more detail in the next module.
+
+**StatelessWidget vs StatefulWidget comparison:**
+
+| Aspect | StatelessWidget | StatefulWidget |
+|---|---|---|
+| **State** | None | Has state (can change) |
+| **Rebuild** | Only when parent rebuilds | When `setState()` is called |
+| **Usage** | Static content | Dynamic/interactive content |
+| **Classes** | 1 class | 2 classes (Widget + State) |
+| **Examples** | `Text`, `Icon`, `Image` | `Checkbox`, `TextField`, Counter |
+
+---
+
+### Common Widgets
+
+Flutter provides a variety of built-in widgets that are frequently used to build user interfaces. The following are some of the most commonly used ones.
+
+---
+
+#### Scaffold
+
+`Scaffold` is a widget that provides the **basic page structure** for Material Design. It manages standard visual layouts such as the app bar, body, floating action button, drawer, and bottom navigation bar.
+
+**Main properties:**
+
+| Property | Description |
+|---|---|
+| `appBar` | Displays the app bar at the top of the page |
+| `body` | The main content of the page |
+| `floatingActionButton` | A floating action button |
+| `drawer` | A navigation panel from the left side |
+| `bottomNavigationBar` | A navigation bar at the bottom |
+| `backgroundColor` | The background color of the page |
+
+```dart
+Scaffold(
+  // AppBar at the top
+  appBar: AppBar(
+    title: Text('Page Title'),
+    centerTitle: true,
+    backgroundColor: Colors.deepPurple,
+    foregroundColor: Colors.white,
+  ),
+  // Main content of the page
+  body: Center(
+    child: Text(
+      'This is the Scaffold body',
+      style: TextStyle(fontSize: 16.0),
+    ),
+  ),
+  // Floating button at the bottom right
+  floatingActionButton: FloatingActionButton(
+    onPressed: () {},
+    child: Icon(Icons.add),
+    backgroundColor: Colors.deepPurple,
+  ),
+  // Background color of the page
+  backgroundColor: Colors.grey[100],
+)
+```
+
+> **Note:** Almost every Flutter page uses `Scaffold` as the outermost widget. Without `Scaffold`, some Material Design features (such as `SnackBar` and `Drawer`) cannot be used.
+
+---
+
+#### Padding
+
+`Padding` is a widget that adds **empty space (distance) around its child widget**. It is useful when we only want to add spacing without needing to use a `Container`.
+
+```dart
+body: Padding(
+  // EdgeInsets.all → same padding on all sides
+  padding: EdgeInsets.all(24.0),
+  child: Text(
+    'This text has 24px padding on all sides.',
+    style: TextStyle(fontSize: 16.0),
+  ),
+),
+```
+
+**`EdgeInsets` variants:**
+
+```dart
+// Same padding on all sides
+EdgeInsets.all(16.0)
+
+// Padding on specific sides only
+EdgeInsets.only(left: 10.0, top: 20.0, right: 10.0, bottom: 0.0)
+
+// Symmetric padding (horizontal / vertical)
+EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0)
+
+// Manual padding: left, top, right, bottom
+EdgeInsets.fromLTRB(10.0, 20.0, 10.0, 5.0)
+```
+
+---
+
+#### ColoredBox
+
+`ColoredBox` is a simple widget that **fills its child's area with a specific color**. It is lighter than `Container` when we only need to provide a background color.
+
+```dart
+body: Center(
+  child: ColoredBox(
+    color: Colors.amber,         // Background color
+    child: Padding(
+      padding: EdgeInsets.all(32.0),
+      child: Text(
+        'Hello from ColoredBox!',
+        style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+      ),
+    ),
+  ),
+),
+```
+
+**When to choose `ColoredBox` vs `Container`?**
+
+| Widget | Use when... |
+|---|---|
+| `ColoredBox` | Only need a background color (more efficient) |
+| `Container` | Need color + size + padding + margin + decoration, etc. |
+
+---
+
+#### Center
+
+`Center` is a layout widget that **places its child widget in the center** of the available space (both horizontally and vertically).
+
+```dart
+body: Center(
+  // Child will be placed exactly in the middle of the body
+  child: Column(
+    mainAxisSize: MainAxisSize.min, // Column only takes up as much space as its children
+    children: [
+      Icon(Icons.star, size: 60.0, color: Colors.amber),
+      SizedBox(height: 12.0),
+      Text(
+        'This widget is centered!',
+        style: TextStyle(fontSize: 16.0),
+      ),
+    ],
+  ),
+),
+```
+
+> **Tips:** `Center` is very commonly used as the `body` of a `Scaffold` to center content in the middle of the screen.
+
+---
+
+#### Container
+
+`Container` is a versatile widget that **combines size, padding, margin, decoration, and transformation** in a single widget. It is often used as a wrapping "box" to control the appearance of its child widget.
+
+**Main properties:**
+
+| Property | Description |
+|---|---|
+| `width` / `height` | Size of the container |
+| `color` | Background color (cannot be used together with `decoration`) |
+| `padding` | Inner spacing (between the container's border and the child) |
+| `margin` | Outer spacing (between the container and other widgets) |
+| `decoration` | Advanced decoration (border, shadow, border radius, gradient) |
+| `alignment` | Position of the child inside the container |
+| `child` | The widget inside the container |
+
+```dart
+body: Center(
+  child: Container(
+    width: 200.0,
+    height: 150.0,
+    margin: EdgeInsets.all(16.0),       // Outer spacing
+    padding: EdgeInsets.all(16.0),      // Inner spacing
+    alignment: Alignment.center,        // Position child to the center
+    decoration: BoxDecoration(
+      color: Colors.blue[100],
+      borderRadius: BorderRadius.circular(12.0), // Rounded corners
+      border: Border.all(color: Colors.blue, width: 2.0),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.blue.withOpacity(0.3),
+          blurRadius: 8.0,
+          offset: Offset(0, 4),
+        ),
+      ],
+    ),
+    child: Text(
+      'Hello, Container!',
+      style: TextStyle(
+        fontSize: 16.0,
+        fontWeight: FontWeight.bold,
+        color: Colors.blue[800],
+      ),
+    ),
+  ),
+),
+```
+
+> **Note:** When using `decoration`, remove the `color` property directly on `Container` and move the color inside `BoxDecoration`. Using both at the same time will cause an error.
+
+---
+
+#### Row and Column
+
+`Row` and `Column` are layout widgets used to **arrange multiple child widgets horizontally (`Row`) or vertically (`Column`)**.
+
+**Main properties (applies to both):**
+
+| Property | Description |
+|---|---|
+| `children` | List of widgets to arrange |
+| `mainAxisAlignment` | Alignment along the main axis (horizontal for Row, vertical for Column) |
+| `crossAxisAlignment` | Alignment along the cross axis (vertical for Row, horizontal for Column) |
+| `mainAxisSize` | Size of the main axis (`max` or `min`) |
+
+**Axis illustration:**
+
+```
+Row:
+  mainAxis   → →  (horizontal)
+  crossAxis  ↓    (vertical)
+
+Column:
+  mainAxis   ↓    (vertical)
+  crossAxis  → →  (horizontal)
+```
+
+**`Row` example:**
+
+```dart
+body: Row(
+  // Arrange children along the main axis (horizontal)
+  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  // Arrange children along the cross axis (vertical)
+  crossAxisAlignment: CrossAxisAlignment.center,
+  children: [
+    Container(
+      width: 80, height: 80,
+      color: Colors.red,
+      child: Center(child: Text('A', style: TextStyle(color: Colors.white, fontSize: 24))),
+    ),
+    Container(
+      width: 80, height: 120,
+      color: Colors.green,
+      child: Center(child: Text('B', style: TextStyle(color: Colors.white, fontSize: 24))),
+    ),
+    Container(
+      width: 80, height: 80,
+      color: Colors.blue,
+      child: Center(child: Text('C', style: TextStyle(color: Colors.white, fontSize: 24))),
+    ),
+  ],
+),
+```
+
+**`Column` example:**
+
+```dart
+body: Column(
+  // Arrange children along the main axis (vertical)
+  mainAxisAlignment: MainAxisAlignment.center,
+  // Stretch children to fill the screen width
+  crossAxisAlignment: CrossAxisAlignment.stretch,
+  children: [
+    Container(
+      height: 60,
+      color: Colors.red,
+      child: Center(child: Text('Row 1', style: TextStyle(color: Colors.white, fontSize: 18))),
+    ),
+    SizedBox(height: 8.0), // Spacing between items
+    Container(
+      height: 60,
+      color: Colors.green,
+      child: Center(child: Text('Row 2', style: TextStyle(color: Colors.white, fontSize: 18))),
+    ),
+    SizedBox(height: 8.0),
+    Container(
+      height: 60,
+      color: Colors.blue,
+      child: Center(child: Text('Row 3', style: TextStyle(color: Colors.white, fontSize: 18))),
+    ),
+  ],
+),
+```
+
+**`MainAxisAlignment` values:**
+
+| Value | Effect |
+|---|---|
+| `start` | Children are grouped at the start of the axis |
+| `end` | Children are grouped at the end of the axis |
+| `center` | Children are grouped in the center |
+| `spaceBetween` | Equal spacing between children (no spacing at the edges) |
+| `spaceAround` | Equal spacing around each child |
+| `spaceEvenly` | Equal spacing, including at the edges |
+
+**`CrossAxisAlignment` values:**
+
+| Value | Effect |
+|---|---|
+| `start` | Children are aligned to the start of the cross axis |
+| `end` | Children are aligned to the end of the cross axis |
+| `center` | Children are aligned to the center of the cross axis |
+| `stretch` | Children are stretched to fill the cross axis |
+
+> **Tips:** Use the `Expanded` or `Flexible` widget inside `Row`/`Column` to proportionally divide the available space among child widgets.
+
+```dart
+Row(
+  children: [
+    Expanded(flex: 1, child: Container(color: Colors.red, height: 50)),   // 1 part
+    Expanded(flex: 2, child: Container(color: Colors.blue, height: 50)),  // 2 parts
+  ],
+)
+```
+
+---
+
 
 ## Images
 
