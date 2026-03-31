@@ -618,6 +618,7 @@ subprojects {
     project.evaluationDependsOn(':app')
 }
 ```
+I modified this project by adding another field called 'author' in here: https://github.com/agusbudi/Flutter-CRUD/
 
 You can learn with other databases like Hive and ObjectBox with these references:
 
