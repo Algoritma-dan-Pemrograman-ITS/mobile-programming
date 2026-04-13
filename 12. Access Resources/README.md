@@ -1,37 +1,63 @@
-# 10 Access Resources
-
-[Previous](/09.%20Connecting%20API%20-%20Machine%20Learning%20Service/) | [Main Page](/) | 
+# 12 Access Resources
 
 ## Content Outline
+
 - [Camera](#camera)
 - [GPS](#gps)
+- [File Manager](#file-manager)
+- [Gallery / Image Picker](#gallery--image-picker)
 
-in this module we will try how to access and use some of the resources in flutter
+In this module we will try how to access and use some of the resources in Flutter.
+
+---
 
 ## Camera
 
-We can access camera using the [`camera`](https://pub.dev/packages/camera) plugin. It show a live camera preview and allows users to take a picture.
+We can access the camera using the [`camera`](https://pub.dev/packages/camera) plugin. It shows a live camera preview and allows users to take a picture. In this version, captured images are saved to the device Gallery in an album named `flutter_access_device_app` using the [`gal`](https://pub.dev/packages/gal) package.
 
-first you must set your depedencies `pubspec.yaml`:
-```
+First you must set your dependencies in `pubspec.yaml`:
+
+```yaml
 dependencies:
   flutter:
     sdk: flutter
-  camera: ^0.10.5+7
+  camera: ^0.11.0
+  gal: ^2.3.0
 ```
 
-after that you have to add this syntax to your `app/src/main/AndroidManifest.xml`:
+After that you have to add this to your `android/app/src/main/AndroidManifest.xml`:
 
-```
-<uses-permission android:name="android.permission.CAMERA"/>
-<uses-permission android:name="android.permission.RECORD_AUDIO"/>
+```xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="...">
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+
+    <application
+        ...>
+    </application>
+</manifest>
 ```
 
-after that you can make your own kind of app or implement this simple code in `main.dart`:
+For iOS, add these keys to `ios/Runner/Info.plist`:
 
+```xml
+<key>NSCameraUsageDescription</key>
+<string>This app needs camera access to take photos.</string>
+<key>NSMicrophoneUsageDescription</key>
+<string>This app needs microphone access for video recording.</string>
 ```
+
+After that you can make your own kind of app or implement this simple code in `main.dart`:
+
+```dart
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:gal/gal.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -74,7 +100,6 @@ class _CameraPreviewScreenState extends State<CameraPreviewScreen> {
       widget.camera,
       ResolutionPreset.high,
     );
-
     _initializeControllerFuture = _controller.initialize();
   }
 
@@ -88,8 +113,11 @@ class _CameraPreviewScreenState extends State<CameraPreviewScreen> {
     try {
       await _initializeControllerFuture;
       final image = await _controller.takePicture();
+
+      await Gal.putImage(image.path, album: 'flutter_access_device_app');
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Picture saved to ${image.path}')),
+        const SnackBar(content: Text('Picture saved to Gallery/flutter_access_device_app')),
       );
     } catch (e) {
       print('Error taking picture: $e');
@@ -119,41 +147,113 @@ class _CameraPreviewScreenState extends State<CameraPreviewScreen> {
 }
 ```
 
-![image-1](https://github.com/user-attachments/assets/c9ff3895-0e6d-491b-ad2a-353b5ec2f3c6)
-
+---
 
 ## GPS
-We can access location using [`flutter_map`](https://pub.dev/packages/flutter_map) and [`location`](https://pub.dev/packages/location) plugins
 
-first you must to setup your depedencies `pubspec.yaml`:
+We can access location using [`google_maps_flutter`](https://pub.dev/packages/google_maps_flutter) and [`location`](https://pub.dev/packages/location) plugins.
+
+First you must set up your dependencies. Run this line in terminal,
 
 ```
+flutter pub add flutter_map latlong2 location
+```
+
+or add these lines in `pubspec.yaml` in the `dependencies` section:
+
+```yaml
 dependencies:
-  flutter:
-    sdk: flutter
-  flutter_map: ^6.2.1
-  latlong2: ^0.9.0
-  location: ^5.0.3
+  google_maps_flutter: ^2.17.0
+  location: ^8.0.1
 ```
 
-after that add your setup at `app/src/main/AndroidManifest.xml`:
+### Google Cloud Console Setup (Android & iOS)
 
-```
-<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-<uses-permission android:name="android.permission.INTERNET" 
+To use Google Maps, you need to obtain an API key from Google Cloud Console:
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project
+3. Enable "Maps SDK for Android" and "Maps SDK for iOS"
+4. Create an API key
+
+### Android Setup
+
+**Step 1: Add permissions**
+
+Add your setup at `android/app/src/main/AndroidManifest.xml` (inside `<manifest>` tag):
+
+```xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+  <uses-permission android:name="android.permission.INTERNET" />
+  ...
 ```
 
-after that make your own app or implement simple code like this:
+**Step 2: Add API key**
 
+Add to `android/app/src/main/AndroidManifest.xml` (inside `<application>` tag):
+
+```xml
+<application
+  <meta-data
+    android:name="com.google.android.geo.API_KEY"
+    android:value="YOUR_API_KEY_HERE"
+  />
+  ...
+>
 ```
+
+### iOS Setup
+
+**Step 1: Add permissions**
+
+Add to `ios/Runner/Info.plist`:
+
+```xml
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>This app needs your location to show it on the map</string>
+<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>This app needs your location to track and display on the map</string>
+```
+
+**Step 2: Update Podfile**
+
+Open `ios/Podfile` and add to the `post_install` section:
+
+```ruby
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+    target.build_configurations.each do |config|
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
+        '$(inherited)',
+        'PERMISSION_LOCATION=1',
+      ]
+    end
+  end
+end
+```
+
+**Step 3: Update Capabilities (Xcode)**
+
+1. Open `Runner.xcworkspace` in Xcode
+2. Select Runner project → Target: Runner
+3. Go to "Signing & Capabilities" tab
+4. Click "+ Capability"
+5. Search and add "Location Services"
+
+### Code Implementation
+
+After that make your own app or implement simple code like this:
+
+```dart
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -164,21 +264,24 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Location Tracking Map',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: MapWithLocation(),
+      home: const MapWithLocation(),
       debugShowCheckedModeBanner: false,
     );
   }
 }
 
 class MapWithLocation extends StatefulWidget {
+  const MapWithLocation({super.key});
+
   @override
-  _MapWithLocationState createState() => _MapWithLocationState();
+  State<MapWithLocation> createState() => _MapWithLocationState();
 }
 
 class _MapWithLocationState extends State<MapWithLocation> {
   final Location _location = Location();
   LocationData? _currentLocation;
-  final MapController _mapController = MapController();
+  GoogleMapController? _mapController;
+  final Set<Marker> _markers = {};
 
   @override
   void initState() {
@@ -191,15 +294,16 @@ class _MapWithLocationState extends State<MapWithLocation> {
     if (!hasPermission) return;
 
     final loc = await _location.getLocation();
-    setState(() {
-      _currentLocation = loc;
-    });
+    setState(() => _currentLocation = loc);
 
-    // Listen to location changes
     _location.onLocationChanged.listen((newLoc) {
       setState(() => _currentLocation = newLoc);
-      _mapController.move(
-          LatLng(newLoc.latitude!, newLoc.longitude!), _mapController.zoom);
+      if (_mapController != null) {
+        _mapController!.animateCamera(
+          CameraUpdate.newLatLng(LatLng(newLoc.latitude!, newLoc.longitude!)),
+        );
+        _updateMarker();
+      }
     });
   }
 
@@ -222,40 +326,224 @@ class _MapWithLocationState extends State<MapWithLocation> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Track My Location"),
-      ),
+      appBar: AppBar(title: const Text('Track My Location')),
       body: _currentLocation == null
-          ? Center(child: CircularProgressIndicator())
-          : FlutterMap(
-        mapController: _mapController,
-        options: MapOptions(
-          center: LatLng(
-              _currentLocation!.latitude!, _currentLocation!.longitude!),
-          zoom: 16,
+          ? const Center(child: CircularProgressIndicator())
+          : GoogleMap(
+              initialCameraPosition: CameraPosition(
+                target: LatLng(
+                  _currentLocation!.latitude!,
+                  _currentLocation!.longitude!,
+                ),
+                zoom: 16,
+              ),
+              markers: _markers,
+              onMapCreated: (controller) {
+                _mapController = controller;
+                _updateMarker();
+              },
+            ),
+    );
+  }
+
+  void _updateMarker() {
+    if (_currentLocation == null) return;
+
+    setState(() {
+      _markers.clear();
+      _markers.add(
+        Marker(
+          markerId: const MarkerId('current_location'),
+          position: LatLng(
+            _currentLocation!.latitude!,
+            _currentLocation!.longitude!,
+          ),
+          infoWindow: const InfoWindow(title: 'My Location'),
         ),
-        children: [
-          TileLayer(
-            urlTemplate:
-            "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-          ),
-          MarkerLayer(
-            markers: [
-              Marker(
-                width: 60,
-                height: 60,
-                point: LatLng(
-                    _currentLocation!.latitude!, _currentLocation!.longitude!),
-                child: Icon(Icons.my_location,
-                    color: Colors.blue, size: 40),
-              )
-            ],
-          ),
-        ],
+      );
+    });
+  }
+}
+```
+
+---
+
+## File Manager
+
+We can access the device file system using the [`file_picker`](https://pub.dev/packages/file_picker) plugin. It lets users browse and pick files of any type from their device.
+
+First you must set your dependencies in `pubspec.yaml`:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  file_picker: ^8.0.0
+```
+
+After that add this to your `app/src/main/AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+<uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+<uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+```
+
+After that you can make your own app or implement this simple code in `main.dart`:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
+
+void main() => runApp(const MyApp());
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(home: FilePickerScreen());
+  }
+}
+
+class FilePickerScreen extends StatefulWidget {
+  const FilePickerScreen({super.key});
+
+  @override
+  State<FilePickerScreen> createState() => _FilePickerScreenState();
+}
+
+class _FilePickerScreenState extends State<FilePickerScreen> {
+  String _result = 'No file selected';
+
+  Future<void> pickFile() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'docx', 'txt'],
+    );
+
+    setState(() {
+      _result = result != null
+          ? 'Selected: ${result.files.single.name}'
+          : 'No file selected';
+    });
+  }
+
+  Future<void> pickDirectory() async {
+    final path = await FilePicker.platform.getDirectoryPath();
+    setState(() {
+      _result = path != null ? 'Directory: $path' : 'No directory selected';
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('File Manager')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(_result, textAlign: TextAlign.center),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: pickFile,
+              child: const Text('Pick a File'),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: pickDirectory,
+              child: const Text('Pick a Directory'),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 ```
 
-![image](https://github.com/user-attachments/assets/33b9c602-8d5e-4633-b2b9-f1db5c82222e)
+---
+
+## Gallery / Image Picker
+
+We can access the photo gallery using the [`image_picker`](https://pub.dev/packages/image_picker) plugin.
+
+First you must set your dependencies in `pubspec.yaml`:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  image_picker: ^1.1.0
+```
+
+For iOS, add to `ios/Runner/Info.plist`:
+
+```xml
+<key>NSPhotoLibraryUsageDescription</key>
+<string>This app needs access to your photo library.</string>
+```
+
+After that you can make your own app or implement this simple code in `main.dart`:
+
+```dart
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+
+void main() => runApp(const MyApp());
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(home: GalleryScreen());
+  }
+}
+
+class GalleryScreen extends StatefulWidget {
+  const GalleryScreen({super.key});
+
+  @override
+  State<GalleryScreen> createState() => _GalleryScreenState();
+}
+
+class _GalleryScreenState extends State<GalleryScreen> {
+  final ImagePicker _picker = ImagePicker();
+  File? _selectedImage;
+
+  Future<void> pickFromGallery() async {
+    final XFile? file = await _picker.pickImage(source: ImageSource.gallery);
+    if (file != null) {
+      setState(() => _selectedImage = File(file.path));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Gallery Picker')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _selectedImage != null
+                ? Image.file(_selectedImage!, height: 300)
+                : const Text('No image selected'),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: pickFromGallery,
+              child: const Text('Pick from Gallery'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+---
