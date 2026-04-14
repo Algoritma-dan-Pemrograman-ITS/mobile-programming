@@ -11,7 +11,7 @@ To use notifications in our app, we can use the `awesome_notifications` package.
 Add the `awesome_notifications` using the following command:
 
 ```bash
-flutter pub add awesome_notifications:^0.7.4+1
+flutter pub add awesome_notifications:^0.10.1
 ```
 
 After adding the dependency, we need to modify the `android/app/build.gradle` file to include the following lines:
@@ -396,7 +396,7 @@ OutlinedButton(
       title: 'Scheduled Notification',
       body: 'This is the body of the notification',
       scheduled: true,
-      interval: 5,
+      interval: Duration(seconds: 5), //if doesn't appear in 5 second please wait a little longer :)
     );
   },
   child: const Text('Scheduled Notification'),
