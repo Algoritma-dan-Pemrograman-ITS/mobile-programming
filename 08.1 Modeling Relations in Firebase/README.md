@@ -1,8 +1,6 @@
 # Modeling Relational Data in Firestore
 
-Source: [Modeling Relational Data in Firestore](https://www.youtube.com/watch?v=jm66TSlVtcc)
-<iframe width="560" height="315" src="https://www.youtube.com/embed/jm66TSlVtcc?si=JKN4tdSjjs_cygFm" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-
+[![Reference Video](https://img.youtube.com/vi/jm66TSlVtcc/0.jpg)](https://www.youtube.com/watch?v=jm66TSlVtcc). 
 ---
 
 ## Table of Contents
