@@ -1,6 +1,8 @@
 # Modeling Relational Data in Firestore
 
+
 [![Reference Video](https://img.youtube.com/vi/jm66TSlVtcc/0.jpg)](https://www.youtube.com/watch?v=jm66TSlVtcc). 
+ 
 ---
 
 ## Table of Contents
@@ -65,6 +67,10 @@ Every model you build uses some combination of these three. Learn them well.
 
 A collection at the top level of your database. The most common one you'll use.
 
+<p align="center">
+ <img height="400" alt="image" src="https://github.com/user-attachments/assets/6e4ce6d0-43c7-4d17-851e-3692685bd2df" />
+</p>
+
 ```
 Firestore Root
  └── users/
@@ -80,6 +86,11 @@ Firestore Root
 ### 2. Embedded Data
 
 Nest extra data directly inside a document as a map. Same as nesting objects in JSON.
+
+<p align="center">
+  <img height="400" alt="image" src="https://github.com/user-attachments/assets/be53438a-510f-455b-ad23-b44f85f3774b" />
+  <img height="300" alt="image" src="https://github.com/user-attachments/assets/8206d9a7-8739-40f1-9358-475f19904c5a" />
+</p>
 
 ```
 user_001
@@ -99,13 +110,17 @@ user_001
 
 A collection that lives *inside* a document. Creates a parent-child relationship.
 
+<p align="center">
+ <img height="400" alt="image" src="https://github.com/user-attachments/assets/fcbc84b3-906d-4f7e-bee8-456dcfe9254c" />
+</p>
+
 ```
 users/
  └── user_001
       ├── name: "Yuta"
-      └── orders/
-           ├── order_001
-           └── order_002
+      └── submissions/
+           ├── submission_001
+           └── submission_002
 ```
 
 **When to use it:** When the child data could grow large but you only ever need it for one specific parent at a time.
@@ -114,27 +129,31 @@ users/
 
 ## 1️⃣ One-to-One: Just Embed It
 
-**Example:** Each user has exactly one settings object.
+**Example:** Each student has exactly one academic info object.
 
 Just put it directly on the user document:
+
+<p align="center">
+ <img height="400" alt="image" src="https://github.com/user-attachments/assets/13356618-2666-42e6-a911-e841c367bdf3" />
+</p>
 
 ```
 user_001
  ├── name: "Yuta"
  ├── email: "yuta@jjh-tokyo.ac.jp"
- └── settings: {
-      theme: "light",
-      language: "jp",
-      notifications: true
+ └── academicInfo: {
+      gpa: 4.0,
+      major: "Computer Science",
+      semester: 6,
+      studentId: "CS2021042"
      }
 ```
 
 **Why this works:**
-- One read gets you the user *and* their settings
-- Settings objects are tiny, the 1 MB cap is not a concern
+- One read gets you the user *and* their academic info
+- If objects are small, then the 1 MB cap is not a concern
 - No extra query needed
-
-This pattern breaks down only if the embedded data could somehow grow without bound, which for settings will never happen.
+- This pattern breaks down only if the embedded data could *somehow grow without bound*.
 
 ---
 
@@ -147,6 +166,10 @@ You have three options. Which one you pick depends entirely on what queries your
 ---
 
 ### Option A — Embed It
+
+<p align="center">
+ <img height="400" alt="image" src="https://github.com/user-attachments/assets/f9ee603a-8bae-4592-a4a9-17f66d8637ab" />
+</p>
 
 ```
 user_001
@@ -170,12 +193,16 @@ user_001
 
 ### Option B — Subcollection
 
+<p align="center">
+ <img height="400" alt="image" src="https://github.com/user-attachments/assets/7e1f86df-6e5f-4292-accb-12e463637888" />
+</p>
+
 ```
 users/
  └── user_001
       └── scores/
-           ├── { course: "framework_programming", score: 88 }
-           └── { course: "object_oriented_programming", score: 75 }
+           ├── framework_programming → { score: 88 }
+           └── object_oriented_programming → { score: 75 }
 ```
 
 **✅ Good when:**
@@ -190,11 +217,15 @@ users/
 
 ### Option C — Root Collection + Foreign Key ⭐ Most flexible
 
+<p align="center">
+ <img height="400" alt="image" src="https://github.com/user-attachments/assets/6d019e63-ee78-4b7c-94f1-e4a2c056fc3a" />
+</p>
+
 ```
 scores/
- ├── { userId: "user_001", course: "framework_programming", score: 88 }
- ├── { userId: "user_001", course: "object_oriented_programming", score: 75 }
- └── { userId: "user_002", course: "framework_programming", score: 91 }
+ ├── user_001_framework_programming → { userId: "user_001", courseId: "framework_programming", score: 88 }
+ ├── user_001_object_oriented_programming → { userId: "user_001", courseId: "object_oriented_programming", score: 75 }
+ └── user_002_framework_programming → { userId: "user_002", courseId: "framework_programming", score: 91 }
 ```
 
 Pull scores into their own root collection and store `userId` on each document. It's the same idea as a foreign key in SQL, just without the JOIN. You query `where userId == "user_001"` as a separate call.
