@@ -1,8 +1,10 @@
 # Modeling Relational Data in Firestore
 
 
-[![Reference Video](https://img.youtube.com/vi/jm66TSlVtcc/0.jpg)](https://www.youtube.com/watch?v=jm66TSlVtcc). 
- 
+[![Reference Video](https://img.youtube.com/vi/jm66TSlVtcc/0.jpg)](https://www.youtube.com/watch?v=jm66TSlVtcc)
+
+[![Visualization Page](https://github.com/user-attachments/assets/03d37f27-cd2f-452a-98d7-a82b25a379b6)](https://htmlpreview.github.io/?https://github.com/Algoritma-dan-Pemrograman-ITS/mobile-programming/blob/main/08.1%20Modeling%20Relations%20in%20Firebase/visualization.html)
+
 ---
 
 ## Table of Contents
