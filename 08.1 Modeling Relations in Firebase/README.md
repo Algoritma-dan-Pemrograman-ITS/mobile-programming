@@ -140,7 +140,7 @@ This pattern breaks down only if the embedded data could somehow grow without bo
 
 ## 🔁 One-to-Many: The One You'll Use Most
 
-**Example:** A user earns multiple sport rankings (one user → many rankings).
+**Example:** A student receives scores for multiple courses (one user → many scores).
 
 You have three options. Which one you pick depends entirely on what queries your app needs to run.
 
@@ -151,10 +151,10 @@ You have three options. Which one you pick depends entirely on what queries your
 ```
 user_001
  ├── name: "Yuta"
- └── rankings: {
-      karate: 3,
-      judo: 1,
-      jiujitsu: 10
+ └── scores: {
+      framework_programming: 88,
+      object_oriented_programming: 75,
+      mobile_programming: 91
      }
 ```
 
@@ -163,7 +163,7 @@ user_001
 - You only ever need this data for that one user
 
 **❌ Breaks when:**
-- You need to search across users (e.g. "find all users with karate level 5")
+- You need to search across users (e.g. "find all users who scored above 90 in Mobile Programming")
 - To do that cross-user query, you'd have to load *every* user document and filter in your app, slow and expensive
 
 ---
@@ -173,35 +173,35 @@ user_001
 ```
 users/
  └── user_001
-      └── rankings/
-           ├── { sport: "karate", level: 3 }
-           └── { sport: "judo", level: 1 }
+      └── scores/
+           ├── { course: "framework_programming", score: 88 }
+           └── { course: "object_oriented_programming", score: 75 }
 ```
 
 **✅ Good when:**
-- Rankings could grow to thousands per user
-- You only ever need them for one user at a time (e.g. "show this user's rankings on their profile")
+- Scores could grow to thousands per user
+- You only ever need them for one user at a time (e.g. "show this user's scores on their profile")
 
 **❌ Breaks when:**
 - You need to query across all users, subcollections are locked to their parent
-- "All karate black belts in the whole app" is impossible from a subcollection
+- "All students who passed Framework Programming" is impossible from a subcollection
 
 ---
 
 ### Option C — Root Collection + Foreign Key ⭐ Most flexible
 
 ```
-rankings/
- ├── { userId: "user_001", sport: "karate", level: 3 }
- ├── { userId: "user_001", sport: "judo", level: 1 }
- └── { userId: "user_002", sport: "karate", level: 5 }
+scores/
+ ├── { userId: "user_001", course: "framework_programming", score: 88 }
+ ├── { userId: "user_001", course: "object_oriented_programming", score: 75 }
+ └── { userId: "user_002", course: "framework_programming", score: 91 }
 ```
 
-Pull rankings into their own root collection and store `userId` on each document. It's the same idea as a foreign key in SQL, just without the JOIN. You query `where userId == "user_001"` as a separate call.
+Pull scores into their own root collection and store `userId` on each document. It's the same idea as a foreign key in SQL, just without the JOIN. You query `where userId == "user_001"` as a separate call.
 
 **✅ Good when:**
 - You need to filter or search across all users
-- "All karate level 5 rankings" → `where sport == "karate" AND level == 5`
+- "All Framework Programming scores above 90" → `where course == "framework_programming" AND score >= 90`
 - You need flexibility to add new query patterns later
 
 **❌ Trade-off:**
@@ -310,9 +310,9 @@ No. That would be:
 
 ```
 tweet_001
- ├── text: "Hello world"
+ ├── text: "Been loving my new domain, time to expand it. Just implemented authentic user flows with mutual session handling"
  ├── userId: "user_001"
- └── heartCount: 42
+ └── heartCount: 249
 ```
 
 **How to keep it accurate:**
