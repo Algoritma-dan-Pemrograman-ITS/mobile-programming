@@ -250,6 +250,10 @@ Users post tweets. You need two screens:
 
 **First instinct:** subcollection.
 
+<p align="center">
+ <img height="400" alt="image" src="https://github.com/user-attachments/assets/655677a5-d7d0-4437-b3e5-407fe5ea2ce6" />
+</p>
+
 ```
 users/
  └── user_001
@@ -261,6 +265,10 @@ users/
 - ❌ Global feed is impossible, you can't query tweets across different users when they're locked in subcollections
 
 **The fix:** move tweets to a root collection.
+
+<p align="center">
+ <img height="388" alt="image" src="https://github.com/user-attachments/assets/8215e72b-99eb-4e7d-a54d-3f549e4ebe2e" />
+</p>
 
 ```
 tweets/
@@ -296,6 +304,10 @@ firestore.collection('tweets')
 - Nobody should be able to heart the same tweet twice
 
 **The solution:** an intermediate collection, same concept as a join table in SQL.
+
+<p align="center">
+ <img height="400" alt="image" src="https://github.com/user-attachments/assets/609ddc28-5578-4472-b413-96b9aef16b87" />
+</p>
 
 ```
 hearts/
@@ -338,6 +350,10 @@ No. That would be:
 - Gets worse as the app grows
 
 **The fix:** store a running total directly on the tweet document.
+
+<p align="center">
+ <img height="378" alt="image" src="https://github.com/user-attachments/assets/ba72fbde-598a-4e8f-a634-575c6b72ef54" />
+</p>
 
 ```
 tweet_001
