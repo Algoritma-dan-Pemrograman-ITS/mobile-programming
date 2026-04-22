@@ -496,3 +496,22 @@ The stored data structure will look like this:
 ```
 
 > **Note:** Deleting a parent document does **not** automatically delete its subcollections. You must delete subcollection documents explicitly, or use a Cloud Function to handle cascading deletes.
+
+## Working Project Example
+
+If you want to see all of the above relationships and Firestore patterns implemented in a real Flutter project, check out this example repository:
+
+**[isar-firestore-example](https://github.com/mikungg/isar-firestore-example)**
+
+This project demonstrates how to combine:
+
+- Isar local database
+- Firebase Firestore cloud database
+- One-to-one relationships
+- One-to-many relationships
+- Many-to-many relationships
+- Firestore document references
+- Firestore subcollections
+- CRUD operations with real Flutter UI
+
+It can be used as a hands-on reference after finishing this module.
