@@ -176,6 +176,10 @@ To use Google Maps, you need to obtain an API key from Google Cloud Console:
 3. Enable "Maps SDK for Android" and "Maps SDK for iOS"
 4. Create an API key
 
+<img width="1408" height="522" alt="image" src="https://github.com/user-attachments/assets/d8fd19e2-39b5-4713-93a5-68638cab2714" />
+
+<img width="720" height="180" alt="image" src="https://github.com/user-attachments/assets/2106560e-159b-4d01-9fa7-e3a2fb41d560" />
+
 ### Android Setup
 
 **Step 1: Add permissions**
@@ -365,6 +369,8 @@ class _MapWithLocationState extends State<MapWithLocation> {
   }
 }
 ```
+
+<img width="360" height="800" alt="image" src="https://github.com/user-attachments/assets/e13f3a60-535e-47df-b7de-c512319f491a" />
 
 ---
 

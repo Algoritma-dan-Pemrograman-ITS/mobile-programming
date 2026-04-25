@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Firestore Data Modeling — Interactive Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700&family=DM+Sans:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0f1117;
+    --surface:  #171c28;
+    --surface2: #1e2435;
+    --border:   #272f42;
+    --border2:  #323d55;
+    --text:     #e4e9f5;
+    --text2:    #8592a8;
+    --text3:    #4a5368;
+    --accent:   #e8923a;
+    --accent2:  #f0a855;
+    --green:    #4ade80;
+    --green-bg: #0d2b1a;
+    --green-bd: #1a4a2e;
+    --blue:     #60a5fa;
+    --blue-bg:  #0d1d35;
+    --blue-bd:  #1a3560;
+    --red:      #f87171;
+    --red-bg:   #2b0d0d;
+    --red-bd:   #4a1a1a;
+    --yellow:   #fbbf24;
+    --code-fg:  #7ee787;
+    --code-key: #e4e9f5;
+    --code-val: #fbbf24;
+    --code-dir: #60a5fa;
+    --code-id:  #4ade80;
+    --radius:   10px;
+    --radius-sm: 6px;
+    --sidebar-w: 220px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── Layout ── */
+  .layout { display: flex; }
+
+  .sidebar {
+    width: var(--sidebar-w);
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    overflow-y: auto;
+  }
+
+  .sidebar-logo {
+    padding: 24px 20px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-logo .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 10px;
+  }
+  .sidebar-logo .logo-icon svg { width: 18px; height: 18px; fill: white; }
+  .sidebar-logo h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: .02em;
+    line-height: 1.3;
+  }
+  .sidebar-logo p {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 3px;
+    letter-spacing: .03em;
+  }
+
+  .nav { padding: 16px 12px; flex: 1; }
+  .nav-label {
+    font-size: 10px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 0 8px;
+    margin-bottom: 6px;
+    margin-top: 16px;
+  }
+  .nav-label:first-child { margin-top: 0; }
+  .nav-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--text2);
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    transition: background .15s, color .15s;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: rgba(232,146,58,.12); color: var(--accent); }
+  .nav-item .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: .5;
+    flex-shrink: 0;
+  }
+  .nav-item.active .dot { opacity: 1; }
+
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    padding: 48px 56px 80px;
+    max-width: calc(var(--sidebar-w) + 800px);
+  }
+
+  /* ── Sections ── */
+  .section { margin-bottom: 64px; scroll-margin-top: 32px; }
+  .section-header { margin-bottom: 24px; }
+  .section-tag {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 8px;
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .section-desc {
+    font-size: 14px;
+    color: var(--text2);
+    margin-top: 6px;
+    line-height: 1.6;
+  }
+
+  /* ── Card ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+  }
+  .card + .card { margin-top: 10px; }
+
+  /* ── Tabs ── */
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .tab-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 7px 16px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .tab-btn:hover:not(.active) { border-color: var(--border2); color: var(--text); }
+  .tab-btn.active {
+    background: rgba(232,146,58,.1);
+    border-color: rgba(232,146,58,.4);
+    color: var(--accent);
+  }
+
+  /* ── Tree ── */
+  .tree {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.9;
+    overflow-x: auto;
+    white-space: pre;
+    padding: 16px 20px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+  }
+  .tree .tf  { color: var(--code-dir); }
+  .tree .td  { color: var(--code-id); font-weight: 500; }
+  .tree .tk  { color: var(--code-key); }
+  .tree .tv  { color: var(--code-val); }
+  .tree .tg  { color: var(--text3); }
+
+  /* ── Divider ── */
+  .divider { height: 1px; background: var(--border); margin: 18px 0; }
+
+  /* ── Grid ── */
+  .grid2 { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 16px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
+
+  /* ── Pro/con list ── */
+  .chklist { list-style: none; padding: 0; font-size: 13px; color: var(--text2); }
+  .chklist li { padding: 3px 0; display: flex; gap: 8px; line-height: 1.5; }
+  .chklist li .ico { flex-shrink: 0; font-size: 11px; margin-top: 2px; }
+  .chklist.pros li .ico { color: var(--green); }
+  .chklist.cons li .ico { color: var(--red); }
+
+  /* ── Label ── */
+  .label {
+    font-size: 10px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text3);
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 6px;
+  }
+
+  /* ── Stat cards in storage section ── */
+  .storage-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+    text-align: left;
+    width: 100%;
+  }
+  .storage-card:hover:not(.active) { border-color: var(--border2); }
+  .storage-card.active {
+    border-color: rgba(232,146,58,.5);
+    background: rgba(232,146,58,.06);
+  }
+  .storage-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .storage-card p { font-size: 12px; color: var(--text2); }
+  .storage-card.active h3 { color: var(--accent); }
+
+  /* ── Hearts demo ── */
+  .tweet-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    transition: border-color .15s;
+  }
+  .tweet-uid { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text3); margin-bottom: 4px; }
+  .tweet-text { font-size: 13px; color: var(--text); line-height: 1.5; margin-bottom: 10px; }
+  .like-btn {
+    background: none;
+    border: 1px solid var(--border2);
+    border-radius: 100px;
+    padding: 4px 14px;
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .like-btn:hover { border-color: var(--red); color: var(--red); }
+  .like-btn.liked { border-color: var(--red); color: var(--red); background: var(--red-bg); }
+
+  .heart-doc {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text2);
+    margin-bottom: 6px;
+    transition: all .3s;
+    line-height: 1.6;
+  }
+  .heart-doc.fresh {
+    border-color: var(--green-bd);
+    background: var(--green-bg);
+    color: var(--green);
+  }
+  .heart-doc .doc-id { font-weight: 500; display: block; margin-bottom: 2px; }
+
+  .log-bar {
+    margin-top: 12px;
+    padding: 10px 16px;
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text2);
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1.5;
+  }
+
+  /* ── Decision ── */
+  .dec-q {
+    font-family: 'Syne', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 18px;
+    line-height: 1.4;
+  }
+  .dec-btn {
+    flex: 1; padding: 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    transition: all .15s;
+  }
+  .dec-btn.yes { background: var(--green-bg); color: var(--green); border-color: var(--green-bd); }
+  .dec-btn.no  { background: var(--red-bg);   color: var(--red);   border-color: var(--red-bd);   }
+  .dec-btn:hover { filter: brightness(1.15); }
+
+  .dec-result {
+    padding: 16px 20px;
+    border-radius: var(--radius);
+    border: 1px solid;
+    margin-bottom: 12px;
+  }
+  .dec-result.info   { background: var(--blue-bg); border-color: var(--blue-bd); color: var(--blue); }
+  .dec-result.success{ background: var(--green-bg);border-color: var(--green-bd);color: var(--green);}
+  .dec-result.warning{ background: rgba(251,191,36,.06); border-color: rgba(251,191,36,.3); color: var(--yellow);}
+  .dec-result.danger { background: var(--red-bg);  border-color: var(--red-bd);  color: var(--red);  }
+  .dec-result .res-label { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; font-family: 'JetBrains Mono', monospace; margin-bottom: 6px; opacity: .8; }
+  .dec-result .res-name  { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .dec-result .res-desc  { font-size: 13px; opacity: .85; line-height: 1.5; }
+
+  .dec-path-item {
+    display: flex; align-items: baseline; gap: 8px;
+    font-size: 12px; color: var(--text3);
+    margin-bottom: 5px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .dec-path-item .q-num { min-width: 24px; }
+  .dec-path-item .q-text { flex: 1; font-family: 'DM Sans', sans-serif; font-size: 12px; }
+  .dec-path-item .q-ans { min-width: 28px; font-weight: 500; }
+  .dec-path-item .q-ans.yes { color: var(--green); }
+  .dec-path-item .q-ans.no  { color: var(--red);   }
+
+  .reset-btn {
+    width: 100%; padding: 8px;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text3);
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: border-color .15s, color .15s;
+  }
+  .reset-btn:hover { border-color: var(--border2); color: var(--text2); }
+
+  /* ── Table ── */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table th {
+    text-align: left; padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px; letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text3);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 400;
+  }
+  .data-table td { padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table td:first-child { color: var(--text); font-weight: 500; }
+  .data-table td:not(:first-child) { color: var(--text2); }
+  .check { color: var(--green); font-size: 14px; }
+  .cross { color: var(--red);   font-size: 14px; }
+
+  /* ── Inline code ── */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .875em;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    color: var(--accent2);
+  }
+
+  /* ── When-to-use ── */
+  .when-box {
+    margin-top: 14px;
+    padding: 12px 16px;
+    background: var(--surface2);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  }
+  .when-box .wl { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); font-family: 'JetBrains Mono', monospace; margin-bottom: 4px; }
+  .when-box p { font-size: 13px; color: var(--text2); }
+
+  /* ── Footer / info bar in sidebar ── */
+  .sidebar-footer {
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text3);
+    line-height: 1.5;
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 10px; }
+
+  /* ── Animations ── */
+  @keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .fadein { animation: fadein .2s ease; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <h1>Firestore<br>Data Modeling</h1>
+      <p>Interactive guide</p>
+    </div>
+    <nav class="nav">
+      <div class="nav-label">Fundamentals</div>
+      <a class="nav-item active" href="#storage" onclick="navClick(this)">
+        <span class="dot"></span> Storage primitives
+      </a>
+      <a class="nav-item" href="#onetomany" onclick="navClick(this)">
+        <span class="dot"></span> One-to-many
+      </a>
+
+      <div class="nav-label">Patterns</div>
+      <a class="nav-item" href="#hearts" onclick="navClick(this)">
+        <span class="dot"></span> Many-to-many demo
+      </a>
+      <a class="nav-item" href="#decision" onclick="navClick(this)">
+        <span class="dot"></span> Decision guide
+      </a>
+
+      <div class="nav-label">Reference</div>
+      <a class="nav-item" href="#tradeoffs" onclick="navClick(this)">
+        <span class="dot"></span> Trade-offs table
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      Based on Firestore<br>Data Modeling (youtube.com)
+    </div>
+  </aside>
+
+  <!-- ── Main ── -->
+  <main class="main">
+
+    <!-- ─ Storage primitives ─ -->
+    <section class="section" id="storage">
+      <div class="section-header">
+        <span class="section-tag">01 — Fundamentals</span>
+        <h2 class="section-title">Three ways to store data</h2>
+        <p class="section-desc">Every model you build uses some combination of these. Learn them before anything else.</p>
+      </div>
+
+      <div class="grid3" style="margin-bottom:12px">
+        <button class="storage-card active" id="sc-root" onclick="st('root')">
+          <h3>Root collection</h3>
+          <p>Top-level, most common</p>
+        </button>
+        <button class="storage-card" id="sc-embed" onclick="st('embed')">
+          <h3>Embedded data</h3>
+          <p>Nested map inside a doc</p>
+        </button>
+        <button class="storage-card" id="sc-sub" onclick="st('sub')">
+          <h3>Subcollection</h3>
+          <p>Collection inside a doc</p>
+        </button>
+      </div>
+
+      <div class="card" id="st-display"></div>
+    </section>
+
+    <!-- ─ One-to-many ─ -->
+    <section class="section" id="onetomany">
+      <div class="section-header">
+        <span class="section-tag">02 — One-to-many</span>
+        <h2 class="section-title">The pattern you'll use most</h2>
+        <p class="section-desc">A student receives scores for multiple courses. Three options — pick based on what queries your app needs.</p>
+      </div>
+
+      <div class="tabs" id="otm-tabs">
+        <button class="tab-btn active" onclick="otm('a')">A — embed it</button>
+        <button class="tab-btn" onclick="otm('b')">B — subcollection</button>
+        <button class="tab-btn" onclick="otm('c')">C — root collection ★</button>
+      </div>
+      <div class="card" id="otm-display"></div>
+    </section>
+
+    <!-- ─ Hearts demo ─ -->
+    <section class="section" id="hearts">
+      <div class="section-header">
+        <span class="section-tag">03 — Many-to-many</span>
+        <h2 class="section-title">Hearts (likes) — live demo</h2>
+        <p class="section-desc">Like a tweet. Watch the <code>hearts/</code> collection update in real time with composite document IDs.</p>
+      </div>
+
+      <div class="grid2">
+        <div>
+          <div class="label">tweets/</div>
+          <div id="tweets-col"></div>
+        </div>
+        <div>
+          <div class="label">hearts/</div>
+          <div id="hearts-col"><p style="font-size:13px;color:var(--text3);font-style:italic;padding:4px 0">empty — like something first</p></div>
+        </div>
+      </div>
+      <div class="log-bar" id="hlog">Click "like" on any tweet to see composite IDs in action.</div>
+    </section>
+
+    <!-- ─ Decision guide ─ -->
+    <section class="section" id="decision">
+      <div class="section-header">
+        <span class="section-tag">04 — Decision guide</span>
+        <h2 class="section-title">Which pattern should I use?</h2>
+        <p class="section-desc">Answer the questions to get a recommended pattern.</p>
+      </div>
+      <div class="card" id="dec-display"></div>
+    </section>
+
+    <!-- ─ Trade-offs ─ -->
+    <section class="section" id="tradeoffs">
+      <div class="section-header">
+        <span class="section-tag">05 — Reference</span>
+        <h2 class="section-title">Trade-offs at a glance</h2>
+        <p class="section-desc">Quick comparison of all five techniques.</p>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table class="data-table">
+          <thead><tr>
+            <th>Technique</th>
+            <th style="text-align:center">Scales</th>
+            <th style="text-align:center">Cross-parent query</th>
+            <th>Best for</th>
+          </tr></thead>
+          <tbody id="tbo"></tbody>
+        </table>
+      </div>
+
+      <!-- Gotchas -->
+      <div style="margin-top:24px">
+        <div class="label" style="margin-bottom:12px">Common mistakes</div>
+        <div class="grid2" style="gap:10px">
+          <div class="card" style="border-left:3px solid var(--red);border-radius:0 var(--radius) var(--radius) 0">
+            <p style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px">No JOINs exist</p>
+            <p style="font-size:13px;color:var(--text2)">Store IDs as strings. Make two separate queries. Accept two reads instead of one joined query.</p>
+          </div>
+          <div class="card" style="border-left:3px solid var(--red);border-radius:0 var(--radius) var(--radius) 0">
+            <p style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px">Subcollection walls</p>
+            <p style="font-size:13px;color:var(--text2)">You cannot query a subcollection across different parent documents. If cross-parent queries might happen later, use root from the start.</p>
+          </div>
+          <div class="card" style="border-left:3px solid var(--yellow);border-radius:0 var(--radius) var(--radius) 0">
+            <p style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px">Duplication is intentional</p>
+            <p style="font-size:13px;color:var(--text2)">In SQL duplication is a mistake. In Firestore, storing <code>authorName</code> on each tweet to avoid a second read is correct design.</p>
+          </div>
+          <div class="card" style="border-left:3px solid var(--yellow);border-radius:0 var(--radius) var(--radius) 0">
+            <p style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px">Design backwards from the screen</p>
+            <p style="font-size:13px;color:var(--text2)">SQL: schema first, queries second. Firestore: look at what each screen needs to display, then build the model around those reads.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+// ── Storage primitives ──
+const stData = {
+  root: {
+    note: 'A collection at the top level of your database. The most common one you will use.',
+    tree: '<span class="tf">Firestore Root</span>\n └── <span class="tf">users/</span>\n      ├── <span class="td">user_001</span>\n      ├── <span class="td">user_002</span>\n      └── <span class="td">user_003</span>',
+    when: 'Almost always. Default to this until you have a reason not to.'
+  },
+  embed: {
+    note: 'Nest extra data directly inside a document as a map — same as nesting objects in JSON.',
+    tree: '<span class="td">user_001</span>\n ├── <span class="tk">name:</span> <span class="tv">"Yuta"</span>\n ├── <span class="tk">email:</span> <span class="tv">"yuta@jjh.ac.jp"</span>\n └── <span class="tk">academicInfo:</span> {\n      <span class="tk">gpa:</span> <span class="tv">4.0</span>,\n      <span class="tk">major:</span> <span class="tv">"Computer Science"</span>,\n      <span class="tk">semester:</span> <span class="tv">6</span>\n     }',
+    when: 'The data is small, always loaded with its parent, and won\'t grow past 1 MB.'
+  },
+  sub: {
+    note: 'A collection that lives inside a document. Creates a parent-child relationship.',
+    tree: '<span class="tf">users/</span>\n └── <span class="td">user_001</span>\n      ├── <span class="tk">name:</span> <span class="tv">"Yuta"</span>\n      └── <span class="tf">submissions/</span>\n           ├── <span class="td">submission_001</span>\n           └── <span class="td">submission_002</span>',
+    when: 'Child data could grow large, but you only ever need it for one specific parent at a time.'
+  }
+};
+
+function st(k) {
+  ['root','embed','sub'].forEach(id => {
+    document.getElementById('sc-'+id).classList.toggle('active', id === k);
+  });
+  const d = stData[k];
+  document.getElementById('st-display').innerHTML = `
+    <p style="font-size:14px;color:var(--text2);margin-bottom:14px">${d.note}</p>
+    <div class="tree">${d.tree}</div>
+    <div class="when-box">
+      <div class="wl">When to use it</div>
+      <p>${d.when}</p>
+    </div>`;
+  document.getElementById('st-display').classList.add('fadein');
+  setTimeout(() => document.getElementById('st-display').classList.remove('fadein'), 300);
+}
+st('root');
+
+// ── One-to-many ──
+const otmData = {
+  a: {
+    label: 'Embedded map on the user doc',
+    tree: '<span class="td">user_001</span>\n ├── <span class="tk">name:</span> <span class="tv">"Yuta"</span>\n └── <span class="tk">scores:</span> {\n      <span class="tk">framework_programming:</span> <span class="tv">88</span>,\n      <span class="tk">object_oriented_programming:</span> <span class="tv">75</span>,\n      <span class="tk">mobile_programming:</span> <span class="tv">91</span>\n     }',
+    pros: ['One read gets user and all scores together', 'Simple — no extra collection to manage'],
+    cons: ['"Who scored above 90 in OOP?" requires loading every user doc', 'Breaks if courses grow without bound']
+  },
+  b: {
+    label: 'Subcollection inside the user doc',
+    tree: '<span class="tf">users/</span>\n └── <span class="td">user_001</span>\n      └── <span class="tf">scores/</span>\n           ├── <span class="td">framework_programming</span>  →  { <span class="tk">score:</span> <span class="tv">88</span> }\n           └── <span class="td">object_oriented_programming</span>  →  { <span class="tk">score:</span> <span class="tv">75</span> }',
+    pros: ['Course name is the doc ID — uniqueness automatic', 'Direct lookup: no query needed, you already know the ID'],
+    cons: ['Locked to one parent — cross-student queries are impossible', '"All students who passed OOP" cannot be done from a subcollection']
+  },
+  c: {
+    label: 'Root collection with composite doc ID ★ most flexible',
+    tree: '<span class="tf">scores/</span>\n ├── <span class="td">user_001_framework_programming</span>\n │    →  { <span class="tk">userId:</span> <span class="tv">"user_001"</span>, <span class="tk">courseId:</span> <span class="tv">"framework_programming"</span>, <span class="tk">score:</span> <span class="tv">88</span> }\n ├── <span class="td">user_001_object_oriented_programming</span>\n │    →  { <span class="tk">userId:</span> <span class="tv">"user_001"</span>, <span class="tk">courseId:</span> <span class="tv">"object_oriented_programming"</span>, <span class="tk">score:</span> <span class="tv">75</span> }\n └── <span class="td">user_002_framework_programming</span>\n      →  { <span class="tk">userId:</span> <span class="tv">"user_002"</span>, <span class="tk">courseId:</span> <span class="tv">"framework_programming"</span>, <span class="tk">score:</span> <span class="tv">91</span> }',
+    pros: ['Cross-user queries: where courseId == "..." AND score >= 90', 'Composite ID prevents duplicates and enables direct lookup', 'Most flexible — add new query patterns anytime'],
+    cons: ['You manage the userId field yourself', 'Joining with user data needs a second query']
+  }
+};
+
+function otm(k) {
+  const keys = ['a','b','c'];
+  document.querySelectorAll('#otm-tabs .tab-btn').forEach((b,i) => b.classList.toggle('active', keys[i] === k));
+  const d = otmData[k];
+  const isStar = k === 'c';
+  document.getElementById('otm-display').innerHTML = `
+    <p style="font-size:14px;font-weight:500;color:${isStar?'var(--accent)':'var(--text)'};margin-bottom:14px">${d.label}</p>
+    <div class="tree" style="margin-bottom:16px">${d.tree}</div>
+    <div class="divider"></div>
+    <div class="grid2">
+      <div>
+        <div class="label" style="color:var(--green);margin-bottom:8px">Good when</div>
+        <ul class="chklist pros">${d.pros.map(p=>`<li><span class="ico">✓</span><span>${p}</span></li>`).join('')}</ul>
+      </div>
+      <div>
+        <div class="label" style="color:var(--red);margin-bottom:8px">Breaks when</div>
+        <ul class="chklist cons">${d.cons.map(c=>`<li><span class="ico">✗</span><span>${c}</span></li>`).join('')}</ul>
+      </div>
+    </div>`;
+  document.getElementById('otm-display').classList.add('fadein');
+  setTimeout(() => document.getElementById('otm-display').classList.remove('fadein'), 300);
+}
+otm('a');
+
+// ── Hearts demo ──
+const tweets = [
+  { id: 'tweet_001', uid: 'user_001', text: 'Just deployed my Firestore schema. Composite IDs are a game changer.' },
+  { id: 'tweet_002', uid: 'user_002', text: "We're winning too much, it's just not fair!" },
+  { id: 'tweet_003', uid: 'user_001', text: 'Subcollection walls are real. Design for cross-parent queries from day one.' }
+];
+const ME = 'user_me';
+let hearts = {};
+let counts = { tweet_001: 3, tweet_002: 12, tweet_003: 1 };
+
+function renderDemo() {
+  document.getElementById('tweets-col').innerHTML = tweets.map(t => {
+    const liked = !!hearts[ME + '_' + t.id];
+    return `<div class="tweet-card">
+      <div class="tweet-uid">${t.uid}</div>
+      <div class="tweet-text">${t.text}</div>
+      <button class="like-btn ${liked?'liked':''}" onclick="doLike('${t.id}')">
+        ${liked ? '♥ liked' : '♡ like'} · ${counts[t.id]}
+      </button>
+    </div>`;
+  }).join('');
+
+  const entries = Object.entries(hearts);
+  if (!entries.length) {
+    document.getElementById('hearts-col').innerHTML = '<p style="font-size:13px;color:var(--text3);font-style:italic;padding:4px 0">empty — like something first</p>';
+    return;
+  }
+  document.getElementById('hearts-col').innerHTML = entries.map(([docId, d]) =>
+    `<div class="heart-doc ${d.fresh?'fresh':''}">
+      <span class="doc-id">${docId}</span>
+      <span style="color:inherit;opacity:.7">userId: "${d.uid}", tweetId: "${d.tid}"</span>
+    </div>`
+  ).join('');
+}
+
+function doLike(tid) {
+  const docId = ME + '_' + tid;
+  if (hearts[docId]) {
+    delete hearts[docId];
+    counts[tid]--;
+    document.getElementById('hlog').textContent = `Removed. Doc "${docId}" deleted from hearts/. Heart count decremented.`;
+  } else {
+    hearts[docId] = { uid: ME, tid, fresh: true };
+    counts[tid]++;
+    document.getElementById('hlog').textContent = `Created doc "${docId}". Composite ID = userId + tweetId. Hearting again just overwrites the same doc — uniqueness is automatic.`;
+    setTimeout(() => { if (hearts[docId]) { hearts[docId].fresh = false; renderDemo(); } }, 1400);
+  }
+  renderDemo();
+}
+renderDemo();
+
+// ── Decision guide ──
+const qs = [
+  { q: 'Is the data small and always loaded alongside its parent?', yes: 1, no: 2 },
+  { q: 'Could it grow without bound over time?', yes: 2, no: { label:'Embedded object', desc:'Small, fixed-size, always co-loaded. Nest it as a map directly in the parent doc.', c:'info' } },
+  { q: 'Do you need to query this data across multiple parent documents?', yes: 3, no: { label:'Subcollection', desc:'Large data, single-parent access only. Subcollection keeps it organized and scoped.', c:'success' } },
+  { q: 'Can A relate to many B, and B also relate to many A?', yes: { label:'Intermediate collection + composite ID', desc:'Many-to-many. Create a join collection with userId_otherId as the doc ID. Uniqueness is free.', c:'danger' }, no: { label:'Root collection + foreign key', desc:'One-to-many with cross-parent queries. Root collection, userId field on each doc.', c:'warning' } }
+];
+let path = [], qi = 0;
+
+function decPath() {
+  return path.map((ans, i) => `
+    <div class="dec-path-item">
+      <span class="q-num">Q${i+1}</span>
+      <span class="q-text">${qs[i].q}</span>
+      <span class="q-ans ${ans}">${ans}</span>
+    </div>`).join('');
+}
+
+function decRender() {
+  const q = qs[qi];
+  const prev = path.length ? decPath() + '<div class="divider"></div>' : '';
+  document.getElementById('dec-display').innerHTML = prev + `
+    <p class="dec-q">Q${qi+1}. ${q.q}</p>
+    <div style="display:flex;gap:8px;${qi>0?'margin-bottom:8px':''}">
+      <button class="dec-btn yes" onclick="dec('yes')">Yes</button>
+      <button class="dec-btn no"  onclick="dec('no')">No</button>
+    </div>
+    ${qi > 0 ? '<button class="reset-btn" onclick="decReset()">Start over</button>' : ''}`;
+}
+
+function decResult(r) {
+  document.getElementById('dec-display').innerHTML = decPath() + `
+    <div class="divider"></div>
+    <div class="dec-result ${r.c}">
+      <div class="res-label">Recommended pattern</div>
+      <div class="res-name">${r.label}</div>
+      <div class="res-desc">${r.desc}</div>
+    </div>
+    <button class="reset-btn" onclick="decReset()">Start over</button>`;
+}
+
+function dec(ans) {
+  path.push(ans);
+  const branch = qs[qi][ans];
+  if (typeof branch === 'object' && branch.label) { decResult(branch); }
+  else { qi = branch; decRender(); }
+}
+function decReset() { path = []; qi = 0; decRender(); }
+decRender();
+
+// ── Trade-offs table ──
+const rows = [
+  { t: 'Embedded object',                     s: false, c: false, b: 'Small, tightly-bound data' },
+  { t: 'Subcollection',                        s: true,  c: false, b: 'Large data, one parent at a time' },
+  { t: 'Root collection + foreign key',        s: true,  c: true,  b: 'Flexible one-to-many' },
+  { t: 'Intermediate collection + composite ID',s: true, c: true,  b: 'Many-to-many relationships' },
+  { t: 'Aggregate field (e.g. heartCount)',    s: true,  c: true,  b: 'Displaying counts frequently' },
+];
+document.getElementById('tbo').innerHTML = rows.map(r => `
+  <tr>
+    <td>${r.t}</td>
+    <td style="text-align:center"><span class="${r.s?'check':'cross'}">${r.s?'✓':'✗'}</span></td>
+    <td style="text-align:center"><span class="${r.c?'check':'cross'}">${r.c?'✓':'✗'}</span></td>
+    <td>${r.b}</td>
+  </tr>`).join('');
+
+// ── Scrollspy ──
+function navClick(el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+}
+
+const sections = ['storage','onetomany','hearts','decision','tradeoffs'];
+const navLinks = document.querySelectorAll('.nav-item');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const idx = sections.indexOf(e.target.id);
+      if (idx > -1) {
+        navLinks.forEach((n, i) => n.classList.toggle('active', i === idx));
+      }
+    }
+  });
+}, { threshold: 0.3 });
+sections.forEach(id => { const el = document.getElementById(id); if (el) observer.observe(el); });
+</script>
+</body>
+</html>
