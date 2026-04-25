@@ -26,6 +26,9 @@
 
 ### [12. Access Resources](/12.%20Access%20Resources/)
 
+### [13. YOLO in Flutter](/13.%20YOLO%20in%20Flutter/)
+
+
 ## How to Contribute - for Teaching Assistants
 
 1. Open issue with the title of the topic you want to contribute to.
