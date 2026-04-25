@@ -1,4 +1,4 @@
-# 13 YOLO Detection
+# 13 YOLO in Flutter
 
 ## Content Outline
 
