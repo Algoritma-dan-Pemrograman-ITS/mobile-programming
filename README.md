@@ -28,6 +28,10 @@
 
 ### [13. YOLO in Flutter](/13.%20YOLO%20in%20Flutter/)
 
+### [14. Vibe Coding](/14.%20Vibe%20Coding%20(Bonus)/)
+
+### [15. Bottom Navigation Bar](/15.%20Bottom%20Navigation%20bar/)
+
 
 ## How to Contribute - for Teaching Assistants
 
