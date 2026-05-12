@@ -36,6 +36,7 @@ The agent might produce faulty code, especially regarding the frontend. In those
 ## Additional Knowledge
 <blockquote class="twitter-tweet"><p lang="en" dir="ltr">🚨 STOP BURNING YOUR TOKENS!<br><br>If you use Claude Code, you are probably wasting 80% of your context window.<br><br>I found 10 ace tools that will completely rescue your API bill.<br><br>1. Caveman Claude<br>- Literally makes Claude talk like a caveman<br>- Slashes 75% of output tokens with zero… <a href="https://t.co/wzCP8JpvIn">https://t.co/wzCP8JpvIn</a> <a href="https://t.co/Vhy3OqthVY">pic.twitter.com/Vhy3OqthVY</a></p>&mdash; Charly Wargnier (@DataChaz) <a href="https://twitter.com/DataChaz/status/2045784379155226971?ref_src=twsrc%5Etfw">April 19, 2026</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
+--------------
 🚨 STOP BURNING YOUR TOKENS!
 
 If you use Claude Code, you are probably wasting 80% of your context window.
