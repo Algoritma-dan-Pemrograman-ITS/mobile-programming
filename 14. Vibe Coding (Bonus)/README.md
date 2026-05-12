@@ -27,3 +27,7 @@
 
 5.  **Review and Implement**  
     Wait for the Agent to finish formulating. Once the plans have been generated, thoroughly review the proposed steps, and then approve them to begin implementation.
+---
+
+### Disclaimer
+The agent might produce faulty code, especially regarding the frontend. In those cases, feel free to debug by yourself, or just point out the issue to the agent again. Send the error screenshot or copy the error message.
