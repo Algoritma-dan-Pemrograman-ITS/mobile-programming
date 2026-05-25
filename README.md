@@ -32,6 +32,8 @@
 
 ### [15. Bottom Navigation Bar](/15.%20Bottom%20Navigation%20bar/)
 
+### [16. Flutter App Structure](/16.%20Flutter%20App%20Architecture/)
+
 
 ## How to Contribute - for Teaching Assistants
 
