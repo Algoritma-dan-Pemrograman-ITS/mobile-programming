@@ -758,7 +758,7 @@ The following table captures the key decisions made in the **BookShelf** referen
 
 ## Reference Implementation
 
-A complete, runnable Flutter project demonstrating every concept above lives in [`arch_implementation/`](arch_implementation/).
+A complete, runnable Flutter project demonstrating every concept above lives in [`arch_implementation/`](https://github.com/prnndk/flutter-app-architecture-example.git). 
 
 ```
 arch_implementation/
