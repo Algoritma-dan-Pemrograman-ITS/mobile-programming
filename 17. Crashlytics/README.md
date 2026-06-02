@@ -1,5 +1,34 @@
 # Crashlytics in Flutter
 
+---
+
+## Table of Contents
+
+- [1. The Problem We're Solving](#1-the-problem-were-solving)
+- [2. Meet Crashlytics](#2-meet-crashlytics)
+- [3. Hands-On Setup](#3-hands-on-setup)
+  - [Step 1. Create a new Firebase project](#step-1-create-a-new-firebase-project)
+  - [Step 2. Add the packages](#step-2-add-the-packages)
+  - [Step 3. Connect your project to Firebase](#step-3-connect-your-project-to-firebase)
+  - [Step 4. Add the imports to `main.dart`](#step-4-add-the-imports-to-maindart)
+  - [Step 5. Update your `main` function](#step-5-update-your-main-function)
+  - [Step 6. The full `main.dart`](#step-6-the-full-maindart)
+- [4. Checking That It Works](#4-checking-that-it-works)
+  - [Option A: One page](#option-a-one-page)
+  - [Option B: Two pages](#option-b-two-pages)
+  - [Reading the terminal output](#reading-the-terminal-output)
+- [5. Reading the Reports in Firebase](#5-reading-the-reports-in-firebase)
+  - [Event types](#event-types)
+- [6. Logging Your Own Errors (Business Logic)](#6-logging-your-own-errors-business-logic)
+  - [Fatal vs Non-Fatal: how to decide](#fatal-vs-non-fatal-how-to-decide)
+- [7. Velocity Alerts](#7--velocity-alerts-)
+- [8. The Metric That Matters: Crash-Free Users](#8-the-metric-that-matters-crash-free-users)
+- [9. How Crashes Get Grouped](#9-how-crashes-get-grouped)
+- [Quick Recap](#quick-recap)
+- [References](#references)
+
+---
+
 ## 1. The Problem We're Solving
 
 Your app will crash. Once real users start running it on hundreds of different devices, something will break that never broke on your machine.
