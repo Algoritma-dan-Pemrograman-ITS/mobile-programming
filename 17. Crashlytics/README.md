@@ -246,6 +246,8 @@ class HomePage extends StatelessWidget {
 ```
 
 ```dart
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class SecondPage extends StatelessWidget {
@@ -255,9 +257,17 @@ class SecondPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: ElevatedButton(
-          onPressed: () => throw FormatException("Format Exception Triggered"),
-          child: const Text("Trigger Format Exception"),
+        child: Column(
+          children: [
+            ElevatedButton(
+                onPressed: () => throw FormatException("Format Exception Triggered"),
+                child: Text("Trigger Format Exception")
+            ),
+            ElevatedButton(
+                onPressed: () {FirebaseCrashlytics.instance.crash();},
+                child: Text("Trigger crash using Crashlytics instance")
+            ),
+          ],
         ),
       ),
     );
