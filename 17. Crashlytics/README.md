@@ -457,6 +457,11 @@ That's what turns thousands of raw crash reports into a short, fixable to-do lis
 
 ---
 
+## Demo Project Example
+https://github.com/hilmizr/mobile-crashlytics-demo-app
+
+---
+
 ## References
 
 - [Get started with Crashlytics for Flutter (Firebase docs)](https://firebase.google.com/docs/crashlytics/flutter/get-started)
